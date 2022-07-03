@@ -6,6 +6,7 @@ NAME = minishell
 
 CC	= gcc
 CFLAGS = -Wall -Werror -Wextra
+LFLAGS = -I /Users/$(USER)/.brew/opt/readline/include -lreadline
 
 RM	= rm -f
 
@@ -16,7 +17,7 @@ RM	= rm -f
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	$(CC) $(CFLAGS) $(SRC) -o $(NAME)
+	$(CC) $(CFLAGS) $(LFLAGS) $(SRC) -o $(NAME)
 
 .PHONY		:	all clean fclean re
 
