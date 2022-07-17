@@ -6,45 +6,24 @@
 /*   By: jdrowzee <jdrowzee@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/17 13:33:29 by jdrowzee          #+#    #+#             */
-/*   Updated: 2022/07/17 13:35:07 by jdrowzee         ###   ########.fr       */
+/*   Updated: 2022/07/17 17:40:02 by jdrowzee         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/minishell.h"
 
-void	ft_handler(int status)
+int	check_builtin_command(t_list *cmd)
 {
-	pid_t	pid;
-
-	pid = waitpid(-1, 0, WNOHANG);
-	if (status == SIGINT)
-	{
-		if (pid == -1)
-		{
-			write(1, "\n", 1);
-			ft_replace_line(1);
-		}
-		else
-		{
-			write(1, "\n", 1);
-			st_flag = 130;
-		}
-	}
-	else if (status == SIGQUIT && pid != -1)
-	{
-		write(1, "Quit: 3\n", 8);
-		st_flag = 131;
-	}
-	else
-		ft_replace_line(131);
-}
-
-void	ft_replace_line(int var_stat)
-{
-	rl_replace_line("", 0);
-	rl_on_new_line();
-	rl_redisplay();
-	st_flag = var_stat;
+	if (ft_strncmp(cmd->content, "echo", 5) == 0
+		|| ft_strncmp(cmd->content, "cd", 3) == 0
+		|| ft_strncmp(cmd->content, "pwd", 4) == 0
+		|| ft_strncmp(cmd->content, "export", 7) == 0
+		|| ft_strncmp(cmd->content, "unset", 6) == 0
+		|| ft_strncmp(cmd->content, "env", 4) == 0
+		|| ft_strncmp(cmd->content, "exit", 5) == 0)
+		return (TRUE);
+	cmd = cmd->next;
+	return (FALSE);
 }
 
 void	execute_builtin_command(t_proc *proc, char **exe)
@@ -66,16 +45,37 @@ void	execute_builtin_command(t_proc *proc, char **exe)
 	free(exe);
 }
 
-int	check_builtin_command(t_list *cmd)
+void	ft_replace_line(int var_stat)
 {
-	if (ft_strncmp(cmd->content, "echo", 5) == 0
-		|| ft_strncmp(cmd->content, "cd", 3) == 0
-		|| ft_strncmp(cmd->content, "pwd", 4) == 0
-		|| ft_strncmp(cmd->content, "export", 7) == 0
-		|| ft_strncmp(cmd->content, "unset", 6) == 0
-		|| ft_strncmp(cmd->content, "env", 4) == 0
-		|| ft_strncmp(cmd->content, "exit", 5) == 0)
-		return (TRUE);
-	cmd = cmd->next;
-	return (FALSE);
+	rl_replace_line("", 0);
+	rl_on_new_line();
+	rl_redisplay();
+	g_stat = var_stat;
+}
+
+void	ft_handler(int status)
+{
+	pid_t	pid;
+
+	pid = waitpid(-1, 0, WNOHANG);
+	if (status == SIGINT)
+	{
+		if (pid == -1)
+		{
+			write(1, "\n", 1);
+			ft_replace_line(1);
+		}
+		else
+		{
+			write(1, "\n", 1);
+			g_stat = 130;
+		}
+	}
+	else if (status == SIGQUIT && pid != -1)
+	{
+		write(1, "Quit: 3\n", 8);
+		g_stat = 131;
+	}
+	else
+		ft_replace_line(131);
 }
